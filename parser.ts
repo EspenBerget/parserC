@@ -1,8 +1,10 @@
 
 export class ParseError {
    msg : string;
-   constructor(msg: string) {
+   funName : string;
+   constructor(msg: string, funName: string) {
        this.msg = "Error: " + msg;
+       this.funName = funName;
    } 
 } // only a string for now. will be an error-context later
 
@@ -26,7 +28,7 @@ export function parseChar(c: string): Parser<string> {
         let first = s.charAt(0);
         if (c === first)
             return new ParseResult(first, s.substr(1));
-        return new ParseError(`Expected "${c}" got "${first}"`);
+        return new ParseError(`Expected "${c}" got "${first}"`, "parseChar");
     }
 }
 
@@ -40,6 +42,16 @@ export function andThen<T,U>(p1: Parser<T>, p2: Parser<U>): Parser<[T,U]> {
         if (res2 instanceof ParseError)
             return res2;
         return new ParseResult([res1.value, res2.value], res2.rest);
+    }
+}
+
+// Try one parser, if it fails try the other
+export function orElse<T,U>(p1: Parser<T>, p2: Parser<U>): Parser<T | U> {
+    return (s: string) => {
+        let res = p1(s);
+        if (res instanceof ParseError) 
+            return p2(s);
+        return res;
     }
 }
 
@@ -57,7 +69,7 @@ export function apply<T,U>(p1: Parser<T>, f: (t: T) => U): Parser<U> {
 export function run<T>(p: Parser<T>, s: string): T | void {
     let res = p(s);
     if (res instanceof ParseError)
-        console.log(res.msg);
+        console.log(res.funName + "!\n" + res.msg);
     if (res instanceof ParseResult)
         return res.value;
 }

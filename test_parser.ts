@@ -14,18 +14,66 @@ describe("Make a parser with parseChar", () => {
     });
 });
 
-describe("Parse a character", () => {
+describe("Parse a character, using parseChar", () => {
     let pA = p.parseChar('A');
     it("should parse the character 'A'", () => {
         let res = p.run(pA, "ABC");
         expect(res).to.equal('A');
     });
     it("should fail on empty input", () => {
-        let res = pA("");
-        expect(res).to.be.an.instanceOf(p.ParseError);
+        expect(pA("")).to.be.an.instanceOf(p.ParseError);
     });
     it("should fail on wrong input", () => {
-        let res = pA("B");
-        expect(res).to.be.an.instanceOf(p.ParseError);
+        expect(pA("B")).to.be.an.instanceOf(p.ParseError);
+    });
+});
+
+describe("Parsers should combine in sequence, using andThen", () => {
+    let pA = p.parseChar('A');
+    let pB = p.parseChar('B');
+    let pAB = p.andThen(pA, pB);
+    it("should succeed if given a string with infix 'AB'", () => {
+        expect(pAB("ABC")).to.be.an.instanceOf(p.ParseResult);
+    });
+    it("should fail if first parser fails", () => {
+        expect(pAB("BBC")).to.be.an.instanceOf(p.ParseError);
+    });
+    it("should fail if second parser fails", () => {
+        expect(pAB("ACC")).to.be.an.instanceOf(p.ParseError);
+    });
+    it("should fail on empty input", () => {
+        expect(pAB("")).to.be.an.instanceOf(p.ParseError);
+    });
+});
+
+describe("Parsers should combine in disjunction, using orElse", () => {
+    let pA = p.parseChar("A");
+    let pB = p.parseChar("B");
+    let pAorB = p.orElse(pA, pB);
+    it("should succeed if infix is 'A'", () => {
+        expect(pAorB("ABC")).to.be.an.instanceOf(p.ParseResult);
+    });
+    it("should succeed if infix is 'B'", () => {
+        expect(pAorB("BBC")).to.be.an.instanceOf(p.ParseResult);
+    });
+    it("should fail if infix is neighter 'A' or 'B'", () => {
+        expect(pAorB("CCC")).to.be.an.instanceOf(p.ParseError);
+    });
+    it("should fail on empty input", () => {
+        expect(pAorB("")).to.be.an.instanceOf(p.ParseError);
+    });
+})
+
+describe("Apply a function to a ParserResults value", () => {
+    let pNum = p.parseChar("1");
+    let pToNum = p.apply(pNum, Number);
+    it("should fail on empty input", () => {
+        expect(pToNum("")).to.be.an.instanceOf(p.ParseError);
+    });
+    it("should fail on wrong input, but right input type", () => {
+        expect(pToNum("2")).to.be.an.instanceOf(p.ParseError);
+    });
+    it("should succeed on infix '1'", () => {
+        expect(p.run(pToNum, "1")).to.equal(1);
     });
 });
