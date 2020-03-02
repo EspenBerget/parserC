@@ -64,9 +64,9 @@ describe("Parsers should combine in disjunction, using orElse", () => {
     });
 })
 
-describe("Apply a function to a ParserResults value", () => {
+describe("Map a function to a ParserResults value", () => {
     let pNum = p.parseChar("1");
-    let pToNum = p.apply(pNum, Number);
+    let pToNum = p.map(pNum, Number);
     it("should fail on empty input", () => {
         expect(pToNum("")).to.be.an.instanceOf(p.ParseError);
     });

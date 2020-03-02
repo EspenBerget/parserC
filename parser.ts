@@ -76,8 +76,8 @@ export function anyOf(...pArr: string[]): Parser<string> {
 //    return pArr.reduce(andThen);
 //}
 
-// Apply a function to a result
-export function apply<T,U>(p1: Parser<T>, f: (t: T) => U): Parser<U> {
+// map a function to a result
+export function map<T,U>(p1: Parser<T>, f: (t: T) => U): Parser<U> {
     return (s: string) => {
         let res = p1(s);
         if (res instanceof ParseError)
