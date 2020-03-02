@@ -77,3 +77,34 @@ describe("Apply a function to a ParserResults value", () => {
         expect(p.run(pToNum, "1")).to.equal(1);
     });
 });
+
+describe("choice should match any of a series of parsers", () => {
+    it("should fail if given zero arguments", () => {
+        expect(() => p.choice()).to.throw();
+    });
+    it("should fail if given one argument", () => {
+        expect(() => p.choice(p.parseChar("A"))).to.throw();
+    });
+    it("should succeed on multiple arguments", () => {
+        let pA = p.parseChar("A");
+        let pB = p.parseChar("B");
+        let pC = p.parseChar("C");
+        let orAB = p.choice(pA,pB);
+        let orABC = p.choice(pA,pB,pC);
+        expect(orAB("ABC")).to.be.an.instanceOf(p.ParseResult);
+        expect(orABC("DBC")).to.be.an.instanceOf(p.ParseError);
+    });
+});
+
+describe("anyOf should match any of a series of characters", () => {
+    it("should fail if given zero arguments", () => {
+        expect(() => p.anyOf()).to.throw();
+    });
+    it("should fail if given one argument", () => {
+        expect(() => p.anyOf("A")).to.throw();
+    });
+    it("should succeed on multiple arguments", () => {
+        let pAorB = p.anyOf("A", "B", "C");
+        expect(pAorB("A")).to.be.an.instanceOf(p.ParseResult);
+    });
+});

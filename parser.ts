@@ -55,6 +55,27 @@ export function orElse<T,U>(p1: Parser<T>, p2: Parser<U>): Parser<T | U> {
     }
 }
 
+// Try a series of parser
+export function choice<T>(...pArr: Parser<T>[]): Parser<T> {
+    if (pArr.length < 2) {
+        throw new Error("choice takes 2 or more arguments");
+    }
+    return pArr.reduce(orElse);
+}
+
+// Try a series of characters
+export function anyOf(...pArr: string[]): Parser<string> {
+    return choice(...pArr.map(parseChar));
+}
+
+// Match a series of parsers
+//export function sequence<T>(...pArr: Parser<T>[]): Parser<T> {
+//    if (pArr.length < 2) {
+//        throw new Error("sequence takes 2 or more arguments");
+//    }
+//    return pArr.reduce(andThen);
+//}
+
 // Apply a function to a result
 export function apply<T,U>(p1: Parser<T>, f: (t: T) => U): Parser<U> {
     return (s: string) => {
