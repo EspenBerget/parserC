@@ -68,14 +68,6 @@ export function anyOf(...pArr: string[]): Parser<string> {
     return choice(...pArr.map(parseChar));
 }
 
-// Match a series of parsers
-//export function sequence<T>(...pArr: Parser<T>[]): Parser<T> {
-//    if (pArr.length < 2) {
-//        throw new Error("sequence takes 2 or more arguments");
-//    }
-//    return pArr.reduce(andThen);
-//}
-
 // map a function to a result
 export function map<T,U>(p1: Parser<T>, f: (t: T) => U): Parser<U> {
     return (s: string) => {
@@ -96,6 +88,37 @@ export function returnP<T>(t: T): Parser<T> {
 // Apply a parser with a function value to another parser
 export function apply<T,U>(pF: Parser<(t: T) => U>, pT: Parser<T>): Parser<U> {
     return map(andThen(pF, pT), ([f,t]) => f(t));
+}
+
+// lift a 2 argument function to parser world
+export function lift2<T,U,V>(f: (t: T) => (u: U) => V): (pT: Parser<T>, pU: Parser<U>) => Parser<V> {
+    let pTU = returnP(f);
+    return (pT, pU) => {
+        return apply(apply(pTU, pT), pU);
+    }
+}
+
+// helpers for sequence
+function cons<T>(h: T) {
+    return (t: T[]) => [h, ...t]; // curry the function
+}
+let consP = lift2(cons);
+
+// Match a series of parsers
+export function sequence<T>(...pArr: Parser<T>[]): Parser<T[]> {
+    if (pArr.length === 0) {
+        return returnP([]);
+    } else {
+        let [h, ...t] = pArr;
+        return consP(h, sequence(...t));
+    }
+}
+
+// Match a string of characters
+export function stringP(s: string): Parser<string> {
+    let pS = s.split('').map(c => parseChar(c));
+    let pSS = sequence(...pS);
+    return map(pSS, (x) => x.join(''));
 }
 
 // Run a parser
