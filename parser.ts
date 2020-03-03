@@ -86,6 +86,18 @@ export function map<T,U>(p1: Parser<T>, f: (t: T) => U): Parser<U> {
     }
 }
 
+// Ignores input and always returns value t
+export function returnP<T>(t: T): Parser<T> {
+    return (s: string) => {
+        return new ParseResult(t, s);
+    }
+}
+
+// Apply a parser with a function value to another parser
+export function apply<T,U>(pF: Parser<(t: T) => U>, pT: Parser<T>): Parser<U> {
+    return map(andThen(pF, pT), ([f,t]) => f(t));
+}
+
 // Run a parser
 export function run<T>(p: Parser<T>, s: string): T | void {
     let res = p(s);

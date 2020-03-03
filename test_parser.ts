@@ -108,3 +108,28 @@ describe("anyOf should match any of a series of characters", () => {
         expect(pAorB("A")).to.be.an.instanceOf(p.ParseResult);
     });
 });
+
+describe("returnP returns the value given to it and ignores the input", () => {
+    it("should succeed always", () => {
+        let pOne = p.returnP(1);
+        expect(p.run(pOne, "hello")).to.be.a("number").equal(1);
+        expect(p.run(pOne, "2")).to.be.a("number").equal(1);
+    });
+});
+
+describe("apply takes a parser with a function value, and another parser, and applies the first to the later", () => {
+    let pF = p.returnP(Number);
+    let pT = p.parseChar("1");
+    let pU = p.parseChar("A");
+    let pWrong = p.apply(pF, pU);
+    let pOne = p.apply(pF, pT);
+    it("should fail if second parser fails", () => {
+        expect(pOne("2")).to.be.an.instanceOf(p.ParseError);
+    });
+    it("should give NaN if first parser is given wrong argument", () => {
+        expect(p.run(pWrong, "A")).to.be.NaN;
+    });
+    it("should succed if given all arguments are correct", () => {
+        expect(p.run(pOne, "1")).to.be.a("number").equal(1);
+    });
+});
