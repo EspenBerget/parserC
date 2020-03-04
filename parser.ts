@@ -6,7 +6,7 @@ export class ParseError {
        this.msg = "Error: " + msg;
        this.funName = funName;
    } 
-} // only a string for now. will be an error-context later
+} 
 
 export class ParseResult<T> {
     value: T;
@@ -43,6 +43,23 @@ export function andThen<T,U>(p1: Parser<T>, p2: Parser<U>): Parser<[T,U]> {
             return res2;
         return new ParseResult([res1.value, res2.value], res2.rest);
     }
+}
+
+// Combine parsers in sequence, but only keep first result
+export function matchFirst<T,U>(p1: Parser<T>, p2: Parser<U>): Parser<T> {
+    let p = andThen(p1, p2);
+    return map(p, ([x,y]) => x);
+}
+
+// Combine parsers in sequence, but only keep second result
+export function matchSecond<T,U>(p1: Parser<T>, p2: Parser<U>): Parser<U> {
+    let p = andThen(p1, p2);
+    return map(p, ([x,y]) => y);
+}
+
+// match only result between two parsers
+export function between<T,U,V>(p1: Parser<T>, p2: Parser<U>, p3: Parser<V>): Parser<U> {
+    return matchSecond(p1, matchFirst(p2, p3));
 }
 
 // Try one parser, if it fails try the other
@@ -119,6 +136,58 @@ export function stringP(s: string): Parser<string> {
     let pS = s.split('').map(c => parseChar(c));
     let pSS = sequence(...pS);
     return map(pSS, (x) => x.join(''));
+}
+
+// Helper function for many, and many1. parses a string into a list of values 
+function parseMany<T>(p: Parser<T>, s: string): [T[], string] {
+    let res = p(s);
+    let ret = [];
+    while (res instanceof ParseResult) {
+        ret.push(res.value);
+        s = res.rest;
+        res = p(s);
+    }
+    return [ret, s];
+}
+
+// Match a parser zero or more times
+export function many<T>(p: Parser<T>): Parser<T[]> {
+    return (s: string) => {
+        let [res, next_s] = parseMany(p, s);
+        return new ParseResult(res, next_s);
+    }
+}
+
+// Match a parser one or more times
+export function many1<T>(p: Parser<T>): Parser<T[]> {
+    return (s: string) => {
+        let [res, next_s] = parseMany(p, s);
+        if (res.length === 0)
+            return new ParseError("needs at least one match", "many1");
+        else
+            return new ParseResult(res, next_s);
+    }
+}
+
+// either match a parser or return null
+export function optional<T>(p: Parser<T>): Parser<T | null> {
+    return (s: string) => {
+        let res = p(s);
+        if (res instanceof ParseError)
+            return new ParseResult(null, s);
+        return res;
+    }
+}
+
+// bind a parser with a function that returns a parser
+export function bind<T,U>(p: Parser<T>, f: (t: T) => Parser<U>): Parser<U> {
+    return (s: string) => {
+        let res = p(s);
+        if (res instanceof ParseError)
+            return res;
+        let p2 = f(res.value);
+        return p2(res.rest);
+    }
 }
 
 // Run a parser
