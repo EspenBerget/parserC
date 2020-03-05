@@ -1,10 +1,8 @@
 
 export class ParseError {
    msg : string;
-   funName : string;
-   constructor(msg: string, funName: string) {
+   constructor(msg: string) {
        this.msg = "Error: " + msg;
-       this.funName = funName;
    } 
 } 
 
@@ -17,10 +15,13 @@ export class ParseResult<T> {
     }
 }
 
+
 type Result<T> = ParseResult<T> | ParseError;
+//type ParseInfo = { info: string };
+//type ParseFn<T> = { fn: (s: string) => Result<T> };
+//type Parser<T> = ParseFn<T> & ParseInfo;
 type Parser<T> = (s: string) => Result<T>;
 
-// TODO: will fail if c is more than one char long
 export function parseChar(c: string): Parser<string> {
     if (c.length !== 1)
         throw new Error(`Length of string to match must be 1. Got "${c}".`);
@@ -28,7 +29,7 @@ export function parseChar(c: string): Parser<string> {
         let first = s.charAt(0);
         if (c === first)
             return new ParseResult(first, s.substr(1));
-        return new ParseError(`Expected "${c}" got "${first}"`, "parseChar");
+        return new ParseError(`Expected "${c}" got "${first}"`);
     }
 }
 
@@ -163,7 +164,7 @@ export function many1<T>(p: Parser<T>): Parser<T[]> {
     return (s: string) => {
         let [res, next_s] = parseMany(p, s);
         if (res.length === 0)
-            return new ParseError("needs at least one match", "many1");
+            return new ParseError("needs at least one match");
         else
             return new ParseResult(res, next_s);
     }
@@ -194,7 +195,7 @@ export function bind<T,U>(p: Parser<T>, f: (t: T) => Parser<U>): Parser<U> {
 export function run<T>(p: Parser<T>, s: string): T | void {
     let res = p(s);
     if (res instanceof ParseError)
-        console.log(res.funName + "!\n" + res.msg);
+        console.log(res.msg);
     if (res instanceof ParseResult)
         return res.value;
 }
