@@ -17,10 +17,7 @@ export class ParseResult<T> {
 
 
 type Result<T> = ParseResult<T> | ParseError;
-//type ParseInfo = { info: string };
-//type ParseFn<T> = { fn: (s: string) => Result<T> };
-//type Parser<T> = ParseFn<T> & ParseInfo;
-type Parser<T> = (s: string) => Result<T>;
+export type Parser<T> = (s: string) => Result<T>;
 
 export function parseChar(c: string): Parser<string> {
     if (c.length !== 1)
