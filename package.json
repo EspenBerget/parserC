@@ -4,7 +4,7 @@
   "description": "Parser Combinator Library",
   "main": "index.js",
   "scripts": {
-    "test": "mocha -r ts-node/register test_parser.ts"
+    "tests": "mocha -r ts-node/register test_parser.ts"
   },
   "author": "Espen Berget",
   "license": "ISC",
