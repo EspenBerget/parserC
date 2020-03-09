@@ -28,12 +28,12 @@ let numberP = p.map(p.many1(digit), (x) => Number(x.join('')));
 
 // match expressions
 // TODO should use expr in place of numberP, currently not possible in TS.
-let exprAdd = addP(p.matchFirst(numberP, matchAdd), numberP);
-let exprSub = subP(p.matchFirst(numberP, matchSub), numberP);
-let exprMul = mulP(p.matchFirst(numberP, matchMul), numberP);
-let exprDiv = divP(p.matchFirst(numberP, matchDiv), numberP);
+const exprAdd = addP(p.matchFirst(numberP, matchAdd), numberP);
+const exprSub = subP(p.matchFirst(numberP, matchSub), numberP);
+const exprMul = mulP(p.matchFirst(numberP, matchMul), numberP);
+const exprDiv = divP(p.matchFirst(numberP, matchDiv), numberP);
 
-let expr = p.choice(exprAdd, exprSub, exprMul, exprDiv, numberP);
+const expr = p.choice(exprAdd, exprSub, exprMul, exprDiv, numberP);
 
 /* this matches:
    <number>
