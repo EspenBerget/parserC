@@ -14,4 +14,4 @@ This is only a toy project, see [parzec](https://github.com/johtela/parzec) for 
 ## Sources
 This project was mostly inspired by Scott Wlaschin's blog post [Understanding Parser Combinators](https://fsharpforfunandprofit.com/parser/).
 
-Alternativly if this interestested you, read [this paper](http://www.cs.nott.ac.uk/~pszgmh/monparsing.pdf).
+Alternatively if this interested you, read [this paper](http://www.cs.nott.ac.uk/~pszgmh/monparsing.pdf).
